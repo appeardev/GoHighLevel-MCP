@@ -44,24 +44,24 @@ dotenv.config();
 class GHLMCPHttpServer {
   private app: express.Application;
   private server: Server;
-  private ghlClient: GHLApiClient;
-  private contactTools: ContactTools;
-  private conversationTools: ConversationTools;
-  private blogTools: BlogTools;
-  private opportunityTools: OpportunityTools;
-  private calendarTools: CalendarTools;
-  private emailTools: EmailTools;
-  private locationTools: LocationTools;
-  private emailISVTools: EmailISVTools;
-  private socialMediaTools: SocialMediaTools;
-  private mediaTools: MediaTools;
-  private objectTools: ObjectTools;
-  private associationTools: AssociationTools;
-  private customFieldV2Tools: CustomFieldV2Tools;
-  private workflowTools: WorkflowTools;
-  private surveyTools: SurveyTools;
-  private storeTools: StoreTools;
-  private productsTools: ProductsTools;
+  private ghlClient: GHLApiClient | null;
+  private contactTools: ContactTools | null;
+  private conversationTools: ConversationTools | null;
+  private blogTools: BlogTools | null;
+  private opportunityTools: OpportunityTools | null;
+  private calendarTools: CalendarTools | null;
+  private emailTools: EmailTools | null;
+  private locationTools: LocationTools | null;
+  private emailISVTools: EmailISVTools | null;
+  private socialMediaTools: SocialMediaTools | null;
+  private mediaTools: MediaTools | null;
+  private objectTools: ObjectTools | null;
+  private associationTools: AssociationTools | null;
+  private customFieldV2Tools: CustomFieldV2Tools | null;
+  private workflowTools: WorkflowTools | null;
+  private surveyTools: SurveyTools | null;
+  private storeTools: StoreTools | null;
+  private productsTools: ProductsTools | null;
   private port: number;
 
   constructor() {
@@ -84,27 +84,55 @@ class GHLMCPHttpServer {
       }
     );
 
-    // Initialize GHL API client
-    this.ghlClient = this.initializeGHLClient();
+    // Initialize GHL API client (optional for deployment)
+    try {
+      this.ghlClient = this.initializeGHLClient();
+      console.log('[GHL MCP HTTP] GHL API client initialized successfully');
+    } catch (error) {
+      console.warn('[GHL MCP HTTP] GHL API client initialization failed:', error.message);
+      console.warn('[GHL MCP HTTP] Server will start without GHL integration');
+      this.ghlClient = null;
+    }
     
-    // Initialize tools
-    this.contactTools = new ContactTools(this.ghlClient);
-    this.conversationTools = new ConversationTools(this.ghlClient);
-    this.blogTools = new BlogTools(this.ghlClient);
-    this.opportunityTools = new OpportunityTools(this.ghlClient);
-    this.calendarTools = new CalendarTools(this.ghlClient);
-    this.emailTools = new EmailTools(this.ghlClient);
-    this.locationTools = new LocationTools(this.ghlClient);
-    this.emailISVTools = new EmailISVTools(this.ghlClient);
-    this.socialMediaTools = new SocialMediaTools(this.ghlClient);
-    this.mediaTools = new MediaTools(this.ghlClient);
-    this.objectTools = new ObjectTools(this.ghlClient);
-    this.associationTools = new AssociationTools(this.ghlClient);
-    this.customFieldV2Tools = new CustomFieldV2Tools(this.ghlClient);
-    this.workflowTools = new WorkflowTools(this.ghlClient);
-    this.surveyTools = new SurveyTools(this.ghlClient);
-    this.storeTools = new StoreTools(this.ghlClient);
-    this.productsTools = new ProductsTools(this.ghlClient);
+    // Initialize tools (only if GHL client is available)
+    if (this.ghlClient) {
+      this.contactTools = new ContactTools(this.ghlClient);
+      this.conversationTools = new ConversationTools(this.ghlClient);
+      this.blogTools = new BlogTools(this.ghlClient);
+      this.opportunityTools = new OpportunityTools(this.ghlClient);
+      this.calendarTools = new CalendarTools(this.ghlClient);
+      this.emailTools = new EmailTools(this.ghlClient);
+      this.locationTools = new LocationTools(this.ghlClient);
+      this.emailISVTools = new EmailISVTools(this.ghlClient);
+      this.socialMediaTools = new SocialMediaTools(this.ghlClient);
+      this.mediaTools = new MediaTools(this.ghlClient);
+      this.objectTools = new ObjectTools(this.ghlClient);
+      this.associationTools = new AssociationTools(this.ghlClient);
+      this.customFieldV2Tools = new CustomFieldV2Tools(this.ghlClient);
+      this.workflowTools = new WorkflowTools(this.ghlClient);
+      this.surveyTools = new SurveyTools(this.ghlClient);
+      this.storeTools = new StoreTools(this.ghlClient);
+      this.productsTools = new ProductsTools(this.ghlClient);
+    } else {
+      // Initialize with null clients for tools
+      this.contactTools = null;
+      this.conversationTools = null;
+      this.blogTools = null;
+      this.opportunityTools = null;
+      this.calendarTools = null;
+      this.emailTools = null;
+      this.locationTools = null;
+      this.emailISVTools = null;
+      this.socialMediaTools = null;
+      this.mediaTools = null;
+      this.objectTools = null;
+      this.associationTools = null;
+      this.customFieldV2Tools = null;
+      this.workflowTools = null;
+      this.surveyTools = null;
+      this.storeTools = null;
+      this.productsTools = null;
+    }
 
     // Setup MCP handlers
     this.setupMCPHandlers();
@@ -408,41 +436,47 @@ class GHLMCPHttpServer {
    * Get tools count summary
    */
   private getToolsCount() {
+    const contactCount = this.contactTools?.getToolDefinitions().length || 0;
+    const conversationCount = this.conversationTools?.getToolDefinitions().length || 0;
+    const blogCount = this.blogTools?.getToolDefinitions().length || 0;
+    const opportunityCount = this.opportunityTools?.getToolDefinitions().length || 0;
+    const calendarCount = this.calendarTools?.getToolDefinitions().length || 0;
+    const emailCount = this.emailTools?.getToolDefinitions().length || 0;
+    const locationCount = this.locationTools?.getToolDefinitions().length || 0;
+    const emailISVCount = this.emailISVTools?.getToolDefinitions().length || 0;
+    const socialMediaCount = this.socialMediaTools?.getTools().length || 0;
+    const mediaCount = this.mediaTools?.getToolDefinitions().length || 0;
+    const objectsCount = this.objectTools?.getToolDefinitions().length || 0;
+    const associationsCount = this.associationTools?.getTools().length || 0;
+    const customFieldsV2Count = this.customFieldV2Tools?.getTools().length || 0;
+    const workflowsCount = this.workflowTools?.getTools().length || 0;
+    const surveysCount = this.surveyTools?.getTools().length || 0;
+    const storeCount = this.storeTools?.getTools().length || 0;
+    const productsCount = this.productsTools?.getTools().length || 0;
+
     return {
-      contact: this.contactTools.getToolDefinitions().length,
-      conversation: this.conversationTools.getToolDefinitions().length,
-      blog: this.blogTools.getToolDefinitions().length,
-      opportunity: this.opportunityTools.getToolDefinitions().length,
-      calendar: this.calendarTools.getToolDefinitions().length,
-      email: this.emailTools.getToolDefinitions().length,
-      location: this.locationTools.getToolDefinitions().length,
-      emailISV: this.emailISVTools.getToolDefinitions().length,
-      socialMedia: this.socialMediaTools.getTools().length,
-      media: this.mediaTools.getToolDefinitions().length,
-      objects: this.objectTools.getToolDefinitions().length,
-      associations: this.associationTools.getTools().length,
-      customFieldsV2: this.customFieldV2Tools.getTools().length,
-      workflows: this.workflowTools.getTools().length,
-      surveys: this.surveyTools.getTools().length,
-      store: this.storeTools.getTools().length,
-      products: this.productsTools.getTools().length,
-      total: this.contactTools.getToolDefinitions().length + 
-             this.conversationTools.getToolDefinitions().length + 
-             this.blogTools.getToolDefinitions().length +
-             this.opportunityTools.getToolDefinitions().length +
-             this.calendarTools.getToolDefinitions().length +
-             this.emailTools.getToolDefinitions().length +
-             this.locationTools.getToolDefinitions().length +
-             this.emailISVTools.getToolDefinitions().length +
-             this.socialMediaTools.getTools().length +
-             this.mediaTools.getToolDefinitions().length +
-             this.objectTools.getToolDefinitions().length +
-             this.associationTools.getTools().length +
-             this.customFieldV2Tools.getTools().length +
-             this.workflowTools.getTools().length +
-             this.surveyTools.getTools().length +
-             this.storeTools.getTools().length +
-             this.productsTools.getTools().length
+      contact: contactCount,
+      conversation: conversationCount,
+      blog: blogCount,
+      opportunity: opportunityCount,
+      calendar: calendarCount,
+      email: emailCount,
+      location: locationCount,
+      emailISV: emailISVCount,
+      socialMedia: socialMediaCount,
+      media: mediaCount,
+      objects: objectsCount,
+      associations: associationsCount,
+      customFieldsV2: customFieldsV2Count,
+      workflows: workflowsCount,
+      surveys: surveysCount,
+      store: storeCount,
+      products: productsCount,
+      total: contactCount + conversationCount + blogCount + opportunityCount + 
+             calendarCount + emailCount + locationCount + emailISVCount + 
+             socialMediaCount + mediaCount + objectsCount + associationsCount + 
+             customFieldsV2Count + workflowsCount + surveysCount + storeCount + 
+             productsCount
     };
   }
 
@@ -666,6 +700,10 @@ class GHLMCPHttpServer {
    * Test GHL API connection
    */
   private async testGHLConnection(): Promise<void> {
+    if (!this.ghlClient) {
+      throw new Error('GHL API client not initialized');
+    }
+
     try {
       console.log('[GHL MCP HTTP] Testing GHL API connection...');
       
