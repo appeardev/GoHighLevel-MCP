@@ -687,8 +687,14 @@ class GHLMCPHttpServer {
     console.log('=========================================');
     
     try {
-      // Test GHL API connection
-      await this.testGHLConnection();
+      // Test GHL API connection (optional for deployment)
+      try {
+        await this.testGHLConnection();
+        console.log('✅ GHL API connection successful');
+      } catch (ghlError) {
+        console.warn('⚠️  GHL API connection failed, starting server without GHL integration');
+        console.warn('   Set GHL_API_KEY and GHL_LOCATION_ID environment variables to enable GHL features');
+      }
       
       // Start HTTP server
       this.app.listen(this.port, '0.0.0.0', () => {
